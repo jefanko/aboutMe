@@ -189,6 +189,20 @@
             margin-bottom: 8px;
         }
 
+        /* FIX: Styling untuk gambar profil agar responsif */
+        .profile-pixel-art {
+            display: block;
+            margin: 15px auto;
+            border: 3px solid #00ffff;
+            image-rendering: pixelated;
+            max-width: 100px;
+            /* Batasi ukuran maksimum */
+            width: 100%;
+            /* Izinkan untuk mengecil */
+            height: auto;
+            /* Jaga rasio aspek */
+        }
+
         .item {
             margin-bottom: 20px;
             padding-bottom: 15px;
@@ -572,7 +586,7 @@
                     teaching. Proven ability to learn quickly and adapt to new challenges. Holder of Best Academic
                     Achievement awards. Fluent in Indonesian, English, and Japanese.</p>
                 <img src="https://placehold.co/100x100/1a1a2e/00ffff?text=Pixel+Me" alt="My Pixelated Photo"
-                    style="display:block; margin: 15px auto; border: 3px solid #00ffff; image-rendering: pixelated;">
+                    class="profile-pixel-art">
             </section>
             <!-- Other sections... -->
             <section id="education" class="section">
@@ -1041,7 +1055,7 @@
                     contactLinkedin: "LinkedIn：www.linkedin.com/in/jefanko-wimasiki-2a5b81176",
                     contactSignal: "または、下のボタンを押して信号を送ってください！",
                     sendMessageButton: "メッセージを送る",
-                    footerText: "© 2025 Jefanko Wimasiki. All rights reserved. Game Over... OR IS IT?",
+                    footerText: "© 2025 ジェファンコ・ウィマシキ. 無断複写・転載を禁じます。ゲームオーバー... かな？",
                     playMusicButton: "音楽を再生",
                     pauseMusicButton: "音楽を一時停止",
                     clockLoading: "時計を読み込み中...",
@@ -1285,4 +1299,4 @@
     </script>
 </body>
 
-</html>
+</html>     
