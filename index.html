@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8-Bit CV - Jefanko Wimasiki</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        /* CSS Reset & Basic Styles */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+            font-family: 'Press Start 2P', cursive;
+            line-height: 1.6;
+            padding: 20px;
+            font-size: 10px;
+            image-rendering: pixelated;
+            -ms-interpolation-mode: nearest-neighbor;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px;
+            border: 4px solid #00ffff;
+            box-shadow: 0 0 15px #00ffff, inset 0 0 10px #00aacc;
+            background-color: #16213e;
+        }
+
+        /* Language Switcher */
+        .lang-switcher {
+            text-align: right;
+            margin-bottom: 10px;
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            z-index: 10;
+        }
+
+        .lang-switcher button {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #e94560;
+            /* Pink */
+            color: #ffffff;
+            border: 2px solid #ffffff;
+            padding: 5px 8px;
+            font-size: 0.7em;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px #b3304a;
+            margin-left: 5px;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .lang-switcher button:hover,
+        .lang-switcher button.active-lang {
+            background-color: #f7b731;
+            /* Yellow */
+            color: #1a1a2e;
+            box-shadow: 1px 1px 0px #c77a00;
+            transform: translate(1px, 1px);
+        }
+
+        /* Header and Navigation */
+        header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 4px dashed #f7b731;
+            margin-bottom: 25px;
+            position: relative;
+            /* For clock positioning */
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            color: #f7b731;
+            text-shadow: 3px 3px 0px #c70039;
+            margin-bottom: 5px;
+            animation: headerPulse 2s infinite ease-in-out;
+        }
+
+        header p {
+            /* For subtitle */
+            font-size: 1.2em;
+            color: #00ffff;
+        }
+
+        .real-time-clock {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.8em;
+            color: #00ffab;
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 5px 8px;
+            border: 1px solid #00ffab;
+        }
+
+        nav {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        nav a {
+            font-family: 'Press Start 2P', cursive;
+            display: inline-block;
+            background-color: #5252ff;
+            color: #ffffff;
+            padding: 10px 15px;
+            margin: 5px;
+            text-decoration: none;
+            border: 3px solid #ffffff;
+            box-shadow: 3px 3px 0px #2a2aad;
+            transition: transform 0.1s, box-shadow 0.1s;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+
+        nav a:hover,
+        nav a.active {
+            background-color: #f7b731;
+            color: #1a1a2e;
+            box-shadow: 1px 1px 0px #c70039;
+            transform: translate(2px, 2px);
+        }
+
+        .section {
+            background-color: #0f3460;
+            border: 3px solid #e94560;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 5px 5px 0px #533483;
+            display: none;
+        }
+
+        .section.active-section {
+            display: block;
+        }
+
+        .section h2 {
+            font-size: 1.8em;
+            color: #e94560;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #00ffff;
+            display: inline-block;
+            position: relative;
+        }
+
+        .animated-sprite-text {
+            animation: floatText 1.5s infinite ease-in-out;
+        }
+
+        .section p,
+        .section ul,
+        .section ol {
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .section ul,
+        .section ol {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .section ul li::before {
+            content: "* ";
+            color: #f7b731;
+            font-weight: bold;
+        }
+
+        .section ul.default-list li::before {
+            content: "> ";
+            color: #00ffff;
+        }
+
+        .section ul li,
+        .section ol li {
+            margin-bottom: 8px;
+        }
+
+        .item {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #5252ff;
+        }
+
+        .item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .item h3 {
+            font-size: 1.3em;
+            color: #00ffab;
+            margin-bottom: 5px;
+        }
+
+        .item .meta {
+            font-size: 0.9em;
+            color: #f7b731;
+            margin-bottom: 8px;
+        }
+
+        .item .meta span {
+            display: block;
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skill-tag {
+            background-color: #e94560;
+            color: #1a1a2e;
+            padding: 6px 10px;
+            font-size: 0.9em;
+            border: 2px solid #0f3460;
+        }
+
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .portfolio-item {
+            border: 3px solid #00ffab;
+            background-color: #16213e;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .portfolio-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border: 2px solid #00ffff;
+            margin-bottom: 8px;
+            image-rendering: pixelated;
+        }
+
+        .portfolio-item img:hover {
+            outline: 2px solid #f7b731;
+        }
+
+        .portfolio-item h4 {
+            font-size: 1.1em;
+            color: #f7b731;
+            margin-bottom: 5px;
+        }
+
+        .portfolio-item p {
+            font-size: 0.85em;
+            color: #e0e0e0;
+            flex-grow: 1;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 4px dashed #f7b731;
+            font-size: 0.8em;
+            color: #00ffff;
+            position: relative;
+        }
+
+        .music-controls {
+            margin-top: 10px;
+        }
+
+        .music-controls button {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #5252ff;
+            color: #ffffff;
+            border: 2px solid #ffffff;
+            padding: 8px 12px;
+            font-size: 0.8em;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px #2a2aad;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .music-controls button:hover {
+            background-color: #f7b731;
+            color: #1a1a2e;
+            box-shadow: 1px 1px 0px #c70039;
+            transform: translate(1px, 1px);
+        }
+
+        .action-button {
+            display: inline-block;
+            background-color: #00ffab;
+            color: #1a1a2e;
+            padding: 12px 20px;
+            margin-top: auto;
+            text-decoration: none;
+            border: 3px solid #1a1a2e;
+            box-shadow: 3px 3px 0px #117a65;
+            transition: transform 0.1s, box-shadow 0.1s;
+            align-self: flex-start;
+            cursor: pointer;
+        }
+
+        .action-button:hover {
+            background-color: #f7b731;
+            color: #1a1a2e;
+            box-shadow: 1px 1px 0px #c70039;
+            transform: translate(2px, 2px);
+        }
+
+        /* --- STYLING MODAL (HALAMAN DETAIL) --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        .modal-content {
+            background-color: #16213e;
+            margin: 5% auto;
+            padding: 25px;
+            border: 4px solid #f7b731;
+            box-shadow: 0 0 20px #f7b731, inset 0 0 15px #c77a00;
+            width: 90%;
+            max-width: 800px;
+            color: #e0e0e0;
+            position: relative;
+            animation: modal-appear 0.3s ease-out;
+        }
+
+        @keyframes modal-appear {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-content h3 {
+            color: #f7b731;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 0px #c70039;
+        }
+
+        .modal-content h4 {
+            color: #00ffab;
+            font-size: 1.3em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .modal-content p,
+        .modal-content ul,
+        .modal-content ol {
+            font-size: 0.9em;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .modal-content ol {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .modal-content ol li {
+            padding-left: 1.5em;
+            text-indent: -1.5em;
+        }
+
+        .modal-content ul li {
+            padding-left: 1.5em;
+            text-indent: -1.5em;
+        }
+
+        .modal-content .component-list li::before {
+            content: "✓ ";
+            color: #00ffab;
+        }
+
+        .modal-close-button {
+            color: #e94560;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 30px;
+            font-weight: bold;
+            transition: color 0.2s;
+        }
+
+        .modal-close-button:hover,
+        .modal-close-button:focus {
+            color: #ffffff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-back-button {
+            margin-top: 20px;
+            background-color: #5252ff;
+        }
+
+        .modal-back-button:hover {
+            background-color: #e94560;
+        }
+
+        .project-diagram {
+            width: 100%;
+            max-width: 400px;
+            display: block;
+            margin: 15px auto;
+            border: 3px solid #00ffff;
+        }
+
+        /* Animation Definitions */
+        @keyframes floatText {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-3px);
+            }
+        }
+
+        @keyframes headerPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                text-shadow: 3px 3px 0px #c70039;
+            }
+
+            50% {
+                transform: scale(1.02);
+                text-shadow: 4px 4px 0px #e94560, 0 0 10px #f7b731;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                font-size: 9px;
+                padding: 10px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            header h1 {
+                font-size: 2em;
+            }
+
+            .real-time-clock {
+                font-size: 0.7em;
+                top: 5px;
+                right: 5px;
+            }
+
+            .lang-switcher {
+                top: 5px;
+                left: 5px;
+            }
+
+            .lang-switcher button {
+                padding: 4px 6px;
+                font-size: 0.6em;
+            }
+
+            .section h2 {
+                font-size: 1.5em;
+            }
+
+            nav a {
+                padding: 8px 10px;
+                font-size: 0.8em;
+            }
+
+            .portfolio-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                font-size: 8px;
+            }
+
+            header h1 {
+                font-size: 1.7em;
+            }
+
+            .lang-switcher {
+                position: static;
+                text-align: center;
+                margin-bottom: 15px;
+            }
+
+            .real-time-clock {
+                position: static;
+                margin-top: 10px;
+                text-align: center;
+            }
+
+            nav a {
+                display: block;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="lang-switcher">
+            <button id="langEnButton" data-lang="en" class="active-lang">EN</button>
+            <button id="langJpButton" data-lang="jp">JP</button>
+        </div>
+        <header>
+            <div id="realTimeClock" class="real-time-clock" data-lang-key="clockLoading">Loading Clock...</div>
+            <h1 data-lang-key="headerName">Jefanko Wimasiki</h1>
+            <p data-lang-key="headerSubtitle">:: CS Undergraduate at Gunadarma University ::</p>
+        </header>
+
+        <nav>
+            <a data-target="about" class="active" data-lang-key="navAbout">About Me</a>
+            <a data-target="education" data-lang-key="navEducation">Education</a>
+            <a data-target="experience" data-lang-key="navExperience">Experience</a>
+            <a data-target="skills" data-lang-key="navSkills">Skills</a>
+            <a data-target="portfolio" data-lang-key="navPortfolio">Portfolio</a>
+            <a data-target="awards" data-lang-key="navAwards">Awards</a>
+            <a data-target="contact" data-lang-key="navContact">Contact</a>
+        </nav>
+
+        <main id="main-content">
+            <!-- About Me Section -->
+            <section id="about" class="section active-section">
+                <h2 class="animated-sprite-text" data-lang-key="aboutTitle">// LEVEL 1: ABOUT ME</h2>
+                <p data-lang-key="aboutParagraph1">A Computer Science undergraduate at Gunadarma University with a
+                    passion for technology and problem-solving. Experienced in technical support, embedded systems, and
+                    teaching. Proven ability to learn quickly and adapt to new challenges. Holder of Best Academic
+                    Achievement awards. Fluent in Indonesian, English, and Japanese.</p>
+                <img src="https://placehold.co/100x100/1a1a2e/00ffff?text=Pixel+Me" alt="My Pixelated Photo"
+                    style="display:block; margin: 15px auto; border: 3px solid #00ffff; image-rendering: pixelated;">
+            </section>
+            <!-- Other sections... -->
+            <section id="education" class="section">
+                <h2 class="animated-sprite-text" data-lang-key="educationTitle">// LEVEL 2: EDUCATION</h2>
+                <div class="item">
+                    <h3 data-lang-key="eduUni1Name">Universitas Gunadarma</h3>
+                    <p class="meta"><span data-lang-key="eduUni1Degree">Computer Science, Computer Systems | 2021 - 2025
+                            (Expected)</span><span data-lang-key="eduUni1Gpa">GPA: 3.95/4.00</span></p>
+                </div>
+                <div class="item">
+                    <h3 data-lang-key="eduUni2Name">University of Indonesia</h3>
+                    <p class="meta" data-lang-key="eduUni2Degree">Bachelor of Science - BS, Geology/Earth Science,
+                        General | 2019 - 2020</p>
+                </div>
+                <div class="item">
+                    <h3 data-lang-key="eduHsName">SMAN 34 JAKARTA</h3>
+                    <p class="meta" data-lang-key="eduHsDegree">High School Diploma | 2016 - 2019</p>
+                </div>
+            </section>
+            <section id="experience" class="section">
+                <h2 class="animated-sprite-text" data-lang-key="experienceTitle">// LEVEL 3: WORK EXPERIENCE</h2>
+                <div class="item">
+                    <h3 data-lang-key="exp1Company">Berkah Maritim Agensi</h3>
+                    <p class="meta"><span data-lang-key="exp1Role">IT Support Specialist</span> | <span
+                            data-lang-key="exp1Date">March 2025 - Present</span></p>
+                    <ul class="default-list">
+                        <li data-lang-key="exp1Task1">Provide technical support for hardware, software, and networking
+                            issues.</li>
+                        <li data-lang-key="exp1Task2">Maintain and troubleshoot computer systems, servers, and network
+                            devices.</li>
+                        <li data-lang-key="exp1Task3">Assist in IT infrastructure management, including system updates
+                            and security measures.</li>
+                        <li data-lang-key="exp1Task4">Support software installation, configuration, and maintenance for
+                            users.</li>
+                    </ul>
+                </div>
+                <div class="item">
+                    <h3 data-lang-key="exp2Company">Freelance</h3>
+                    <p class="meta"><span data-lang-key="exp2Role">Embedded System Engineer</span> | <span
+                            data-lang-key="exp2Date">November 2024 - Present</span></p>
+                    <ul class="default-list">
+                        <li data-lang-key="exp2Task1">Developing and testing embedded systems for various applications.
+                        </li>
+                    </ul>
+                </div>
+                <div class="item">
+                    <h3 data-lang-key="exp3Company">Laboratorium Elektronika & Komputer UG</h3>
+                    <p class="meta"><span data-lang-key="exp3Role">Laboratory Assistant</span> | <span
+                            data-lang-key="exp3Date">March 2023 - Present</span></p>
+                    <p data-lang-key="exp3Location">Depok, West Java, Indonesia</p>
+                    <ul class="default-list">
+                        <li data-lang-key="exp3Task1">Teach basic electronics, digital system, microprocessor, embedded
+                            system & interface courses.</li>
+                        <li data-lang-key="exp3Task2">Planning and preparing lessons.</li>
+                        <li data-lang-key="exp3Task3">Marking student work and recording performance.</li>
+                        <li data-lang-key="exp3Task4">Setting assessments and overseeing examinations.</li>
+                        <li data-lang-key="exp3Task5">Student project Consultant.</li>
+                    </ul>
+                </div>
+                <div class="item">
+                    <h3 data-lang-key="exp4Company">Self-employed</h3>
+                    <p class="meta"><span data-lang-key="exp4Role">Japanese Language Private Tutor</span> | <span
+                            data-lang-key="exp4Date">January 2022 - Present</span></p>
+                    <ul class="default-list">
+                        <li data-lang-key="exp4Task1">Providing personalized Japanese language instruction to students.
+                        </li>
+                    </ul>
+                </div>
+                <div class="item">
+                    <h3 data-lang-key="exp5Company">Gunadarma University</h3>
+                    <p class="meta"><span data-lang-key="exp5Role">Featured Course: DGX Laboratory Teaching
+                            Assistant</span> | <span data-lang-key="exp5Date">September 2022 - December 2022</span></p>
+                    <p data-lang-key="exp5Location">Depok, West Java, Indonesia</p>
+                    <ul class="default-list">
+                        <li data-lang-key="exp5Task1">Assisted Gunadarma University's students on data analysis reports
+                            and assignments creation.</li>
+                        <li data-lang-key="exp5Task2">Assisted Gunadarma University's students on solving problems
+                            related to data analysis assignments given.</li>
+                        <li data-lang-key="exp5Task3">Evaluated and assessed practical reports and assignments.</li>
+                    </ul>
+                </div>
+            </section>
+            <section id="skills" class="section">
+                <h2 class="animated-sprite-text" data-lang-key="skillsTitle">// LEVEL 4: SKILLS (SKILL TREE)</h2>
+                <p data-lang-key="skillsIntro">Some skills I've leveled up:</p>
+                <div class="skills-list"><span class="skill-tag">JavaScript</span><span
+                        class="skill-tag">CSS</span><span class="skill-tag">Technical Support</span><span
+                        class="skill-tag">Embedded Systems</span><span class="skill-tag">Electronics</span><span
+                        class="skill-tag">Microprocessors</span><span class="skill-tag">Interfacing</span><span
+                        class="skill-tag">Data Analysis</span><span class="skill-tag">Phaser 3</span><span
+                        class="skill-tag">RPG Maker</span><span class="skill-tag">ESP32</span><span
+                        class="skill-tag">Arduino</span><span class="skill-tag">Discord Bot API</span><span
+                        class="skill-tag">Fingerprint Sensor</span><span class="skill-tag"
+                        data-lang-key="skillLangId">Indonesian (Native)</span><span class="skill-tag"
+                        data-lang-key="skillLangJp">Japanese (Professional)</span><span class="skill-tag"
+                        data-lang-key="skillLangEn">English (Professional)</span><span class="skill-tag">Teaching</span>
+                </div>
+            </section>
+            <section id="portfolio" class="section">
+                <h2 class="animated-sprite-text" data-lang-key="portfolioTitle">// LEVEL 5: PORTFOLIO (LEGENDARY ITEMS)
+                </h2>
+                <div class="portfolio-grid">
+                    <div class="portfolio-item">
+                        <img src="https://placehold.co/200x120/16a085/ffffff?text=Server+Security" alt="Thesis Project">
+                        <h4 data-lang-key="portfolio1Title">Thesis: Server Security Integration (Discord Bot & ESP32)
+                        </h4>
+                        <p data-lang-key="portfolio1Desc">Thesis project integrating physical server security using a
+                            Discord bot for notifications and control via an ESP32 microcontroller.</p>
+                        <a href="#" class="action-button" data-modal-target="thesis-detail-modal"
+                            data-lang-key="viewDetailsButton">VIEW DETAILS</a>
+                    </div>
+                    <div class="portfolio-item">
+                        <img src="https://placehold.co/200x120/27ae60/ffffff?text=Door+Security" alt="Research Project">
+                        <h4 data-lang-key="portfolio2Title">Research: Room Door Security (Arduino & Fingerprint)</h4>
+                        <p data-lang-key="portfolio2Desc">Research on implementing a room door security system using
+                            Arduino Uno connected to a fingerprint sensor for authentication.</p>
+                        <a href="#" class="action-button" data-modal-target="research-detail-modal"
+                            data-lang-key="viewDetailsButton">VIEW DETAILS</a>
+                    </div>
+                    <div class="portfolio-item">
+                        <img src="https://placehold.co/200x120/f7b731/1a1a2e?text=Phaser+3+Game"
+                            alt="8-Bit Browser Game">
+                        <h4 data-lang-key="portfolio3Title">8-Bit Dragon Slayer (Phaser 3)</h4>
+                        <p data-lang-key="portfolio3Desc">A retro-style web adventure game where you must defeat the
+                            dragon Ignis and save Princess Aurelia.</p>
+                        <a href="#" class="action-button" data-modal-target="game-detail-modal"
+                            data-lang-key="viewDetailsButton">VIEW DETAILS</a>
+                    </div>
+                    <div class="portfolio-item">
+                        <img src="https://placehold.co/200x120/00ffff/1a1a2e?text=RPG+Maker+Game" alt="RPG Maker Game">
+                        <h4 data-lang-key="portfolio4Title">RPG "Second Arrival" (RPG Maker)</h4>
+                        <p data-lang-key="portfolio4Desc">A narrative-driven personal project inspired by classic JRPGs,
+                            built with RPG Maker MV.</p>
+                        <a href="#" class="action-button" data-modal-target="rpg-detail-modal"
+                            data-lang-key="viewDetailsButton">VIEW DETAILS</a>
+                    </div>
+                </div>
+            </section>
+            <section id="awards" class="section">
+                <h2 class="animated-sprite-text" data-lang-key="awardsTitle">// LEVEL 6: HONORS & AWARDS</h2>
+                <p data-lang-key="awardsIntro">Recognitions received during my academic journey:</p>
+                <ul>
+                    <li data-lang-key="award1Item">Best Academic Achievement (Awarded multiple times)</li>
+                </ul>
+            </section>
+            <section id="contact" class="section">
+                <h2 class="animated-sprite-text" data-lang-key="contactTitle">// FINAL BOSS: CONTACT ME</h2>
+                <p data-lang-key="contactIntro">Interested in collaborating or recruiting me for the next mission? Reach
+                    me via:</p>
+                <ul class="default-list">
+                    <li data-lang-key="contactEmail">Email: jefankowimasiki@gmail.com</li>
+                    <li data-lang-key="contactLinkedin">LinkedIn: www.linkedin.com/in/jefanko-wimasiki-2a5b81176</li>
+                </ul>
+                <p style="margin-top:15px;" data-lang-key="contactSignal">Or press the button below to send a signal!
+                </p>
+                <a href="mailto:jefankowimasiki@gmail.com?subject=Job%20Opportunity%20/%20Inquiry" class="action-button"
+                    data-lang-key="sendMessageButton">SEND MESSAGE</a>
+            </section>
+        </main>
+
+        <footer>
+            <p data-lang-key="footerText">© 2025 Jefanko Wimasiki. All rights reserved. Game Over... OR IS IT?</p>
+            <div class="music-controls">
+                <button id="playMusicButton" data-lang-key="playMusicButton">Play Music</button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- PROJECT MODALS -->
+    <div id="thesis-detail-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close-button">&times;</span>
+            <h3 data-lang-key="portfolio1Title"></h3>
+            <p data-lang-key="thesis_p1"></p>
+            <h4>Key Components</h4>
+            <ul class="default-list component-list">
+                <li data-lang-key="thesis_comp1"></li>
+                <li data-lang-key="thesis_comp2"></li>
+                <li data-lang-key="thesis_comp3"></li>
+                <li data-lang-key="thesis_comp4"></li>
+                <li data-lang-key="thesis_comp5"></li>
+                <li data-lang-key="thesis_comp6"></li>
+            </ul>
+            <h4>General Workflow</h4>
+            <p data-lang-key="thesis_wf1"></p>
+            <ol>
+                <li data-lang-key="thesis_wf2"></li>
+                <li data-lang-key="thesis_wf3"></li>
+                <li data-lang-key="thesis_wf4"></li>
+                <li data-lang-key="thesis_wf5"></li>
+                <li data-lang-key="thesis_wf6"></li>
+            </ol>
+            <img src="https://placehold.co/400x250/0f3460/ffffff?text=System+Block+Diagram" alt="System Block Diagram"
+                class="project-diagram">
+            <button class="action-button modal-back-button">BACK TO CV</button>
+        </div>
+    </div>
+
+    <div id="research-detail-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close-button">&times;</span>
+            <h3 data-lang-key="portfolio2Title"></h3>
+            <p data-lang-key="research_p1"></p>
+            <h4>Key Components</h4>
+            <ul class="default-list component-list">
+                <li data-lang-key="research_comp1"></li>
+                <li data-lang-key="research_comp2"></li>
+                <li data-lang-key="research_comp3"></li>
+                <li data-lang-key="research_comp4"></li>
+            </ul>
+            <h4>General Workflow</h4>
+            <p data-lang-key="research_wf1"></p>
+            <ol>
+                <li data-lang-key="research_wf2"></li>
+                <li data-lang-key="research_wf3"></li>
+                <li data-lang-key="research_wf4"></li>
+            </ol>
+            <img src="https://placehold.co/400x250/0f3460/ffffff?text=System+Flowchart" alt="System Flowchart"
+                class="project-diagram">
+            <button class="action-button modal-back-button">BACK TO CV</button>
+        </div>
+    </div>
+
+    <div id="game-detail-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close-button">&times;</span>
+            <h3 data-lang-key="portfolio3Title"></h3>
+            <p data-lang-key="game_p1"></p>
+            <h4>Key Features & Tech Stack</h4>
+            <ul class="default-list component-list">
+                <li data-lang-key="game_feat1"></li>
+                <li data-lang-key="game_feat2"></li>
+                <li data-lang-key="game_feat3"></li>
+                <li data-lang-key="game_feat4"></li>
+            </ul>
+            <h4>Gameplay Overview</h4>
+            <p data-lang-key="game_wf1"></p>
+            <img src="https://raw.githubusercontent.com/jefanko/8bitgame/main/assets/game-screenshot.png"
+                alt="8-bit Game Screenshot" class="project-diagram"
+                onerror="this.onerror=null;this.src='https://placehold.co/400x250/f7b731/1a1a2e?text=Game+Screenshot';">
+            <a href="https://jefanko.github.io/8bitgame/" target="_blank" rel="noopener noreferrer"
+                class="action-button modal-back-button" data-lang-key="playGameButton">PLAY GAME</a>
+        </div>
+    </div>
+
+    <div id="rpg-detail-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close-button">&times;</span>
+            <h3 data-lang-key="portfolio4Title"></h3>
+            <p data-lang-key="rpg_p1"></p>
+            <h4>Development Journey</h4>
+            <ul class="default-list component-list">
+                <li data-lang-key="rpg_feat1"></li>
+                <li data-lang-key="rpg_feat2"></li>
+                <li data-lang-key="rpg_feat3"></li>
+            </ul>
+            <h4>Tech Stack</h4>
+            <ul class="default-list component-list">
+                <li data-lang-key="rpg_tech1"></li>
+            </ul>
+            <a href="https://github.com/jefanko/second-arrival/releases/tag/release" target="_blank"
+                rel="noopener noreferrer" class="action-button modal-back-button"
+                data-lang-key="downloadGameButton">DOWNLOAD GAME</a>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Translations Object ---
+            const translations = {
+                en: {
+                    headerName: "Jefanko Wimasiki",
+                    headerSubtitle: ":: CS Undergraduate at Gunadarma University ::",
+                    navAbout: "About Me",
+                    navEducation: "Education",
+                    navExperience: "Experience",
+                    navSkills: "Skills",
+                    navPortfolio: "Portfolio",
+                    navAwards: "Awards",
+                    navContact: "Contact",
+                    aboutTitle: "// LEVEL 1: ABOUT ME",
+                    aboutParagraph1: "A Computer Science undergraduate at Gunadarma University with a passion for technology and problem-solving. Experienced in technical support, embedded systems, and teaching. Proven ability to learn quickly and adapt to new challenges. Holder of Best Academic Achievement awards. Fluent in Indonesian, English, and Japanese.",
+                    educationTitle: "// LEVEL 2: EDUCATION",
+                    eduUni1Name: "Universitas Gunadarma",
+                    eduUni1Degree: "Computer Science, Computer Systems | 2021 - 2025 (Expected)",
+                    eduUni1Gpa: "GPA: 3.95/4.00",
+                    eduUni2Name: "University of Indonesia",
+                    eduUni2Degree: "Bachelor of Science - BS, Geology/Earth Science, General | 2019 - 2020",
+                    eduHsName: "SMAN 34 JAKARTA",
+                    eduHsDegree: "High School Diploma | 2016 - 2019",
+                    experienceTitle: "// LEVEL 3: WORK EXPERIENCE",
+                    exp1Company: "Berkah Maritim Agensi",
+                    exp1Role: "IT Support Specialist",
+                    exp1Date: "March 2025 - Present",
+                    exp1Task1: "Provide technical support for hardware, software, and networking issues.",
+                    exp1Task2: "Maintain and troubleshoot computer systems, servers, and network devices.",
+                    exp1Task3: "Assist in IT infrastructure management, including system updates and security measures.",
+                    exp1Task4: "Support software installation, configuration, and maintenance for users.",
+                    exp2Company: "Freelance",
+                    exp2Role: "Embedded System Engineer",
+                    exp2Date: "November 2024 - Present",
+                    exp2Task1: "Developing and testing embedded systems for various applications.",
+                    exp3Company: "Laboratorium Elektronika & Komputer UG",
+                    exp3Role: "Laboratory Assistant",
+                    exp3Date: "March 2023 - Present",
+                    exp3Location: "Depok, West Java, Indonesia",
+                    exp3Task1: "Teach basic electronics, digital system, microprocessor, embedded system & interface courses.",
+                    exp3Task2: "Planning and preparing lessons.",
+                    exp3Task3: "Marking student work and recording performance.",
+                    exp3Task4: "Setting assessments and overseeing examinations.",
+                    exp3Task5: "Student project Consultant.",
+                    exp4Company: "Self-employed",
+                    exp4Role: "Japanese Language Private Tutor",
+                    exp4Date: "January 2022 - Present",
+                    exp4Task1: "Providing personalized Japanese language instruction to students.",
+                    exp5Company: "Gunadarma University",
+                    exp5Role: "Featured Course: DGX Laboratory Teaching Assistant",
+                    exp5Date: "September 2022 - December 2022",
+                    exp5Location: "Depok, West Java, Indonesia",
+                    exp5Task1: "Assisted Gunadarma University's students on data analysis reports and assignments creation.",
+                    exp5Task2: "Assisted Gunadarma University's students on solving problems related to data analysis assignments given.",
+                    exp5Task3: "Evaluated and assessed practical reports and assignments.",
+                    skillsTitle: "// LEVEL 4: SKILLS (SKILL TREE)",
+                    skillsIntro: "Some skills I've leveled up:",
+                    skillLangId: "Indonesian (Native)",
+                    skillLangJp: "Japanese (Professional)",
+                    skillLangEn: "English (Professional)",
+                    portfolioTitle: "// LEVEL 5: PORTFOLIO (LEGENDARY ITEMS)",
+                    portfolio1Title: "Thesis: Server Security Integration (Discord Bot & ESP32)",
+                    portfolio1Desc: "Thesis project integrating physical server security using a Discord bot for notifications and control via an ESP32 microcontroller.",
+                    portfolio2Title: "Research: Room Door Security (Arduino & Fingerprint)",
+                    portfolio2Desc: "Research on implementing a room door security system using Arduino Uno connected to a fingerprint sensor for authentication.",
+                    portfolio3Title: "8-Bit Dragon Slayer (Phaser 3)",
+                    portfolio3Desc: "A retro-style web adventure game where you must defeat the dragon Ignis and save Princess Aurelia.",
+                    portfolio4Title: "RPG \"Second Arrival\" (RPG Maker)",
+                    portfolio4Desc: "A narrative-driven personal project inspired by classic JRPGs, built with RPG Maker MV.",
+                    viewDetailsButton: "VIEW DETAILS",
+                    awardsTitle: "// LEVEL 6: HONORS & AWARDS",
+                    awardsIntro: "Recognitions received during my academic journey:",
+                    award1Item: "Best Academic Achievement (Awarded multiple times)",
+                    contactTitle: "// FINAL BOSS: CONTACT ME",
+                    contactIntro: "Interested in collaborating or recruiting me for the next mission? Reach me via:",
+                    contactEmail: "Email: jefankowimasiki@gmail.com",
+                    contactLinkedin: "LinkedIn: www.linkedin.com/in/jefanko-wimasiki-2a5b81176",
+                    contactSignal: "Or press the button below to send a signal!",
+                    sendMessageButton: "SEND MESSAGE",
+                    footerText: "© 2025 Jefanko Wimasiki. All rights reserved. Game Over... OR IS IT?",
+                    playMusicButton: "Play Music",
+                    pauseMusicButton: "Pause Music",
+                    clockLoading: "Loading Clock...",
+                    clockWIB: "WIB",
+                    // Thesis Project Details
+                    thesis_p1: "This project is an IoT-based security system prototype to protect server room access from unauthorized entry and potential sabotage. It integrates hardware sensors with a Discord bot for remote monitoring and control.",
+                    thesis_comp1: "<b>ESP32 Microcontroller:</b> The brain of the system, processing all data and connecting to the internet.",
+                    thesis_comp2: "<b>RFID MFRC522:</b> Used for user authentication via registered RFID cards/tags.",
+                    thesis_comp3: "<b>Magnetic Sensor (MC-38):</b> Detects the door's status (open/closed).",
+                    thesis_comp4: "<b>Vibration Sensor (SW-420):</b> Detects break-in attempts by sensing vibrations.",
+                    thesis_comp5: "<b>Servo Motor (SG90):</b> Acts as the physical door lock actuator.",
+                    thesis_comp6: "<b>Discord Bot & Firebase:</b> For real-time notifications, access logs, and remote control.",
+                    thesis_wf1: "The system operates in a continuous loop, monitoring all sensors. The general process is as follows:",
+                    thesis_wf2: "<b>1. Initialization:</b> When powered on, the ESP32 connects to WiFi and establishes a real-time connection with the Firebase database.",
+                    thesis_wf3: "<b>2. Door & Lock Monitoring:</b> The system constantly checks the door status (open/closed) via the magnetic sensor and sends updates to Firebase, which are then reflected on the Discord bot.",
+                    thesis_wf4: "<b>3. RFID Access:</b> A user taps a registered RFID card. The ESP32 validates the card's UID against the authorized list in Firebase. If valid, the servo motor unlocks the door. If invalid, a buzzer sounds, and access is denied. All access attempts (successful or failed) are logged.",
+                    thesis_wf5: "<b>4. Intrusion Detection:</b> If the door is locked and the vibration sensor detects a significant impact, the system triggers a local alarm (buzzer and LED) and sends an immediate high-priority alert to the Discord server.",
+                    thesis_wf6: "<b>5. Remote Control:</b> An authorized admin can use commands (e.g., `/lock-door`, `/unlock-door`, `/reset-alarm`) in Discord. The bot updates a value in Firebase, which the ESP32 reads and acts upon, allowing for full remote management.",
+                    // Research Project Details
+                    research_p1: "This research project focuses on creating a room door security prototype using an Arduino Uno. It combines a fingerprint sensor for primary authentication with an ultrasonic sensor for presence detection.",
+                    research_comp1: "<b>Arduino Uno:</b> The main controller processing logic from the sensors.",
+                    research_comp2: "<b>Fingerprint Sensor (AS608):</b> Provides secure, biometric authentication to grant access.",
+                    research_comp3: "<b>Ultrasonic Sensor (HC-SR04):</b> Detects if a person is in front of the door, activating the system's display.",
+                    research_comp4: "<b>LCD, LED, Buzzer & Servo:</b> Provide visual and auditory feedback and control the physical lock.",
+                    research_wf1: "The system's logic is straightforward and event-driven:",
+                    research_wf2: "<b>1. Presence Detection:</b> The ultrasonic sensor continuously checks for objects. If someone is detected within 20cm, the LCD backlight turns on, prompting for a fingerprint.",
+                    research_wf3: "<b>2. Fingerprint Authentication:</b> The user places their finger on the AS608 sensor. The Arduino compares the scanned print with the stored templates.",
+                    research_wf4: "<b>3. Access Granted/Denied:</b> If a match is found, the servo unlocks the door, a green LED blinks, and a success message is shown. If no match is found, a red LED blinks, a buzzer sounds, and an error message is displayed.",
+                    // Game Project Details
+                    game_p1: "A retro-style, web-based adventure game where you take on the role of a valiant warrior. Your epic quest is to defeat the fearsome dragon, Ignis, and rescue the beloved Princess Aurelia from his fiery clutches.",
+                    game_feat1: "<b>Engaging Narrative:</b> A storyline involving saving Princess Aurelia, with pre-game narration and a rewarding epilogue cutscene.",
+                    game_feat2: "<b>Dynamic Dragon AI:</b> The dragon moves, attacks with fireballs, and can cause damage on body contact.",
+                    game_feat3: "<b>Player Control:</b> Smooth warrior movement (up, down, left, right) and sword attack mechanics.",
+                    game_feat4: "<b>Synthesized 8-bit Music:</b> Unique themes for the menu, battle, and epilogue created with Tone.js.",
+                    game_wf1: "Players control the warrior using the Arrow Keys to move and the Spacebar to swing their sword. The objective is to dodge the dragon's fireballs and attack it until its HP reaches zero, ultimately rescuing the princess.",
+                    playGameButton: "PLAY GAME",
+                    // RPG Project Details
+                    rpg_p1: "This is a personal project started in 2020, born from a love for classic JRPGs like Final Fantasy. It's a narrative-driven game built to capture the essence of retro role-playing adventures.",
+                    rpg_feat1: "<b>First Personal Project:</b> Started as a passion project during the pandemic to explore game creation.",
+                    rpg_feat2: "<b>Classic JRPG Inspired:</b> Heavily influenced by the storytelling and mechanics of the Final Fantasy series.",
+                    rpg_feat3: "<b>Episodic Structure:</b> Originally planned as a single game, it has been divided into 5 parts to manage the development scope.",
+                    rpg_tech1: "<b>RPG Maker MV:</b> The entire game is built using the RPG Maker MV engine with its default assets and plugins.",
+                    downloadGameButton: "DOWNLOAD GAME"
+                },
+                jp: {
+                    headerName: "ジェファンコ・ウィマシキ",
+                    headerSubtitle: ":: グナダルマ大学コンピューターサイエンス学部生 ::",
+                    navAbout: "自己紹介",
+                    navEducation: "学歴",
+                    navExperience: "職務経歴",
+                    navSkills: "スキル",
+                    navPortfolio: "ポートフォリオ",
+                    navAwards: "受賞歴",
+                    navContact: "連絡先",
+                    aboutTitle: "// レベル1：自己紹介",
+                    aboutParagraph1: "グナダルマ大学のコンピューターサイエンス学部生です。テクノロジーと問題解決に情熱を注いでいます。テクニカルサポート、組み込みシステム、教育の経験があります。迅速な学習能力と新しい課題への適応能力が証明されています。最優秀学業成績賞を複数回受賞。インドネシア語、英語、日本語に堪能です。",
+                    educationTitle: "// レベル2：学歴",
+                    eduUni1Name: "グナダルマ大学",
+                    eduUni1Degree: "コンピューターサイエンス、コンピューターシステム | 2021年 - 2025年（予定）",
+                    eduUni1Gpa: "GPA: 3.95/4.00",
+                    eduUni2Name: "インドネシア大学",
+                    eduUni2Degree: "理学士 - BS、地質学/地球科学、一般 | 2019年 - 2020年",
+                    eduHsName: "SMAN 34 ジャカルタ",
+                    eduHsDegree: "高校卒業証書 | 2016年 - 2019年",
+                    experienceTitle: "// レベル3：職務経歴",
+                    exp1Company: "ベルカ・マリタイム・アゲンシ",
+                    exp1Role: "ITサポートスペシャリスト",
+                    exp1Date: "2025年3月 - 現在",
+                    exp1Task1: "ハードウェア、ソフトウェア、ネットワークの問題に関する技術サポートを提供。",
+                    exp1Task2: "コンピューターシステム、サーバー、ネットワークデバイスの保守とトラブルシューティング。",
+                    exp1Task3: "システム更新やセキュリティ対策を含むITインフラ管理を支援。",
+                    exp1Task4: "ユーザー向けのソフトウェアインストール、設定、保守をサポート。",
+                    exp2Company: "フリーランス",
+                    exp2Role: "組み込みシステムエンジニア",
+                    exp2Date: "2024年11月 - 現在",
+                    exp2Task1: "さまざまなアプリケーション向けの組み込みシステムの開発とテスト。",
+                    exp3Company: "UG電子計算機研究所",
+                    exp3Role: "研究助手",
+                    exp3Date: "2023年3月 - 現在",
+                    exp3Location: "デポック、西ジャワ、インドネシア",
+                    exp3Task1: "基礎電子工学、デジタルシステム、マイクロプロセッサ、組み込みシステム、インターフェースコースを指導。",
+                    exp3Task2: "授業の計画と準備。",
+                    exp3Task3: "学生の課題の採点と成績記録。",
+                    exp3Task4: "評価の設定と試験監督。",
+                    exp3Task5: "学生プロジェクトコンサルタント。",
+                    exp4Company: "自営業",
+                    exp4Role: "日本語家庭教師",
+                    exp4Date: "2022年1月 - 現在",
+                    exp4Task1: "学生への個別日本語指導。",
+                    exp5Company: "グナダルマ大学",
+                    exp5Role: "特集コース：DGXラボラトリーティーチングアシスタント",
+                    exp5Date: "2022年9月 - 2022年12月",
+                    exp5Location: "デポック、西ジャワ、インドネシア",
+                    exp5Task1: "Nvdia DGX-1およびDGX A100を使用したデータ分析レポートと課題作成に関してグナダルマ大学の学生を支援。",
+                    exp5Task2: "与えられたデータ分析課題に関連する問題解決においてグナダルマ大学の学生を支援。",
+                    exp5Task3: "実習レポートと課題の評価と査定。",
+                    skillsTitle: "// レベル4：スキルツリー",
+                    skillsIntro: "レベルアップしたスキルの一部：",
+                    skillLangId: "インドネシア語（母語）",
+                    skillLangJp: "日本語（ビジネスレベル）",
+                    skillLangEn: "英語（ビジネスレベル）",
+                    portfolioTitle: "// レベル5：ポートフォリオ（伝説のアイテム）",
+                    portfolio1Title: "卒業論文：サーバーセキュリティ統合（Discordボット＆ESP32）",
+                    portfolio1Desc: "ESP32マイクロコントローラーを介した通知と制御のためのDiscordボットを使用した物理サーバーセキュリティを統合する卒業論文プロジェクト。",
+                    portfolio2Title: "研究：部屋のドアセキュリティ（Arduino＆指紋）",
+                    portfolio2Desc: "認証のために指紋センサーに接続されたArduino Unoを使用した部屋のドアセキュリティシステムの実装に関する研究。",
+                    portfolio3Title: "8ビット ドラゴンスレイヤー (Phaser 3)",
+                    portfolio3Desc: "レトロスタイルのウェブアドベンチャーゲーム。竜イグニスを倒し、アウレリア姫を救出します。",
+                    portfolio4Title: "RPG「セカンドアライバル」（RPGツクール）",
+                    portfolio4Desc: "クラシックJRPGに触発された、物語主導の個人プロジェクト。RPGツクールMVで制作。",
+                    viewDetailsButton: "詳細を見る",
+                    awardsTitle: "// レベル6：栄誉と受賞歴",
+                    awardsIntro: "学業中に受けた表彰：",
+                    award1Item: "最優秀学業成績賞（複数回受賞）",
+                    contactTitle: "// 最終ボス：連絡先",
+                    contactIntro: "次のミッションでの協力や採用に興味がありますか？以下の方法でご連絡ください：",
+                    contactEmail: "メール：jefankowimasiki@gmail.com",
+                    contactLinkedin: "LinkedIn：www.linkedin.com/in/jefanko-wimasiki-2a5b81176",
+                    contactSignal: "または、下のボタンを押して信号を送ってください！",
+                    sendMessageButton: "メッセージを送る",
+                    footerText: "© 2025 Jefanko Wimasiki. All rights reserved. Game Over... OR IS IT?",
+                    playMusicButton: "音楽を再生",
+                    pauseMusicButton: "音楽を一時停止",
+                    clockLoading: "時計を読み込み中...",
+                    clockWIB: "WIB",
+                    // Terjemahan untuk Halaman Detail Proyek
+                    thesis_p1: "このプロジェクトは、IoTベースのセキュリティシステムのプロトタイプであり、不正な侵入や妨害行為からサーバルームのアクセスを保護します。ハードウェアセンサーとDiscordボットを統合し、リモートでの監視と制御を実現します。",
+                    thesis_comp1: "<b>ESP32マイクロコントローラー:</b> システムの頭脳。全てのデータを処理し、インターネットに接続します。",
+                    thesis_comp2: "<b>RFID MFRC522:</b> 登録されたRFIDカード/タグによるユーザー認証に使用します。",
+                    thesis_comp3: "<b>磁気センサー (MC-38):</b> ドアの状態（開/閉）を検出します。",
+                    thesis_comp4: "<b>振動センサー (SW-420):</b> 振動を感知して侵入の試みを検出します。",
+                    thesis_comp5: "<b>サーボモーター (SG90):</b> 物理的なドアロックアクチュエーターとして機能します。",
+                    thesis_comp6: "<b>Discordボット & Firebase:</b> リアルタイム通知、アクセスログ、リモート制御のために使用します。",
+                    thesis_wf1: "システムは連続ループで動作し、全てのセンサーを監視します。一般的なプロセスは次のとおりです。",
+                    thesis_wf2: "<b>1. 初期化:</b> 電源を入れると、ESP32はWiFiに接続し、Firebaseデータベースとのリアルタイム接続を確立します。",
+                    thesis_wf3: "<b>2. ドアとロックの監視:</b> システムは磁気センサーを介してドアの状態（開/閉）を常に確認し、Firebaseに更新を送信します。これはDiscordボットに反映されます。",
+                    thesis_wf4: "<b>3. RFIDアクセス:</b> ユーザーが登録済みのRFIDカードをタップします。ESP32はFirebaseの認証済みリストと照合してカードのUIDを検証します。有効な場合はサーボモーターがドアのロックを解除します。無効な場合はブザーが鳴り、アクセスが拒否されます。全てのアクセス試行はログに記録されます。",
+                    thesis_wf5: "<b>4. 侵入検知:</b> ドアがロックされている状態で振動センサーが大きな衝撃を検知すると、システムはローカルアラーム（ブザーとLED）をトリガーし、Discordサーバーに即座に高優先度のアラートを送信します。",
+                    thesis_wf6: "<b>5. リモートコントロール:</b> 認証された管理者はDiscordでコマンド（例：`/lock-door`、`/unlock-door`、`/reset-alarm`）を使用できます。ボットがFirebaseの値を更新し、それをESP32が読み取って実行することで、完全なリモート管理が可能になります。",
+                    // Terjemahan Detail Proyek Penelitian
+                    research_p1: "この研究プロジェクトは、Arduino Unoを使用した部屋のドアセキュリティプロトタイプの作成に焦点を当てています。主要な認証のための指紋センサーと、存在検知のための超音波センサーを組み合わせています。",
+                    research_comp1: "<b>Arduino Uno:</b> センサーからのロジックを処理するメインコントローラー。",
+                    research_comp2: "<b>指紋センサー (AS608):</b> 安全な生体認証を提供してアクセスを許可します。",
+                    research_comp3: "<b>超音波センサー (HC-SR04):</b> ドアの前に人がいるかどうかを検知し、システムのディスプレイを起動させます。",
+                    research_comp4: "<b>LCD, LED, ブザー & サーボ:</b> 視覚的および聴覚的なフィードバックを提供し、物理的なロックを制御します。",
+                    research_wf1: "システムのロジックは単純でイベント駆動型です:",
+                    research_wf2: "<b>1. 存在検知:</b> 超音波センサーが継続的に物体をチェックします。20cm以内に誰かが検知されると、LCDのバックライトが点灯し、指紋の入力を促します。",
+                    research_wf3: "<b>2. 指紋認証:</b> ユーザーがAS608センサーに指を置きます。Arduinoはスキャンされた指紋を保存されているテンプレートと比較します。",
+                    research_wf4: "<b>3. アクセス許可/拒否:</b> 一致が見つかった場合、サーボがドアのロックを解除し、緑色のLEDが点滅し、成功メッセージが表示されます。一致が見つからない場合、赤色のLEDが点滅し、ブザーが鳴り、エラーメッセージが表示されます。",
+                    // Terjemahan Detail Proyek Game
+                    game_p1: "レトロスタイルのウェブアドベンチャーゲーム。勇敢な戦士となり、恐ろしいドラゴン「イグニス」を倒し、愛するアウレリア姫をその炎の魔の手から救出する壮大なクエストに挑みます。",
+                    game_feat1: "<b>魅力的な物語:</b> アウレリア姫を救うストーリーライン。ゲーム前のナレーションと感動的なエピローグカットシーン付き。",
+                    game_feat2: "<b>ダイナミックなドラゴンのAI:</b> ドラゴンは移動し、火の玉で攻撃し、体当たりでもダメージを与えます。",
+                    game_feat3: "<b>プレイヤー操作:</b> スムーズな戦士の動き（上下左右）と剣による攻撃メカニズム。",
+                    game_feat4: "<b>合成8ビット音楽:</b> Tone.jsで作成されたメニュー、戦闘、エピローグ用のユニークなテーマ。",
+                    game_wf1: "プレイヤーは矢印キーで戦士を操作し、スペースバーで剣を振ります。目的は、ドラゴンの火の玉を避けながら剣で攻撃し、HPをゼロにして最終的に姫を救出することです。",
+                    playGameButton: "ゲームをプレイ",
+                    // Terjemahan Detail Proyek RPG
+                    rpg_p1: "これは2020年に始まった個人プロジェクトで、ファイナルファンタジーのようなクラシックJRPGへの愛情から生まれました。レトロなロールプレイングアドベンチャーの本質を捉えるために作られた物語主導のゲームです。",
+                    rpg_feat1: "<b>初の個人プロジェクト:</b> パンデミック中にゲーム制作を探求するための情熱的なプロジェクトとして開始。",
+                    rpg_feat2: "<b>クラシックJRPGに触発:</b> ファイナルファンタジーシリーズのストーリーテリングとメカニズムに強く影響を受けています。",
+                    rpg_feat3: "<b>エピソード形式:</b> 当初は1つのゲームとして計画されていましたが、開発範囲を管理するために5つのパートに分割されました。",
+                    rpg_tech1: "<b>RPGツクールMV:</b> ゲーム全体は、RPGツクールMVエンジンとそのデフォルトのアセットとプラグインを使用して構築されています。",
+                    downloadGameButton: "ゲームをダウンロード"
+                }
+            };
+
+            let currentLang = 'en';
+            let musicPlaying = false;
+            let synths = {};
+            let isMusicInitialized = false;
+
+            const langEnButton = document.getElementById('langEnButton');
+            const langJpButton = document.getElementById('langJpButton');
+            const clockElement = document.getElementById('realTimeClock');
+            const playMusicButton = document.getElementById('playMusicButton');
+            const navLinks = document.querySelectorAll('nav a');
+            const sections = document.querySelectorAll('.section');
+            const mainContent = document.getElementById('main-content');
+
+            const projectModals = document.querySelectorAll('.modal');
+            const viewDetailButtons = document.querySelectorAll('[data-modal-target]');
+            const modalCloseButtons = document.querySelectorAll('.modal-close-button');
+            const modalBackButtons = document.querySelectorAll('.modal-back-button');
+
+            function applyTranslations(lang) {
+                document.querySelectorAll('[data-lang-key]').forEach(element => {
+                    const key = element.dataset.langKey;
+                    if (translations[lang] && translations[lang][key]) {
+                        if (key.includes('_comp') || key.includes('_wf') || key.includes('_feat') || key.includes('_tech')) {
+                            element.innerHTML = translations[lang][key];
+                        } else {
+                            element.textContent = translations[lang][key];
+                        }
+                    } else if (translations['en'][key]) { // Fallback to English
+                        if (key.includes('_comp') || key.includes('_wf') || key.includes('_feat') || key.includes('_tech')) {
+                            element.innerHTML = translations['en'][key];
+                        } else {
+                            element.textContent = translations['en'][key];
+                        }
+                    }
+                });
+                if (clockElement.textContent.includes(":")) {
+                    updateClockText(lang);
+                } else {
+                    clockElement.textContent = translations[lang].clockLoading || translations.en.clockLoading;
+                }
+                if (musicPlaying) {
+                    playMusicButton.textContent = translations[lang].pauseMusicButton || translations.en.pauseMusicButton;
+                } else {
+                    playMusicButton.textContent = translations[lang].playMusicButton || translations.en.playMusicButton;
+                }
+            }
+
+            function setLanguage(lang) {
+                currentLang = lang;
+                applyTranslations(lang);
+                langEnButton.classList.toggle('active-lang', lang === 'en');
+                langJpButton.classList.toggle('active-lang', lang === 'jp');
+            }
+
+            langEnButton.addEventListener('click', () => setLanguage('en'));
+            langJpButton.addEventListener('click', () => setLanguage('jp'));
+
+            function showSection(targetId) {
+                sections.forEach(section => {
+                    section.style.display = 'none';
+                });
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    targetSection.style.display = 'block';
+                }
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.dataset.target === targetId);
+                });
+            }
+
+            function showMainContent() {
+                projectModals.forEach(modal => modal.style.display = 'none');
+                mainContent.style.display = 'block';
+                document.querySelector('nav').style.display = 'block';
+                document.querySelector('footer').style.display = 'block';
+            }
+
+            function showProjectDetails(modalId) {
+                mainContent.style.display = 'none';
+                const targetModal = document.getElementById(modalId);
+                if (targetModal) {
+                    targetModal.style.display = 'block';
+                }
+                document.querySelector('nav').style.display = 'none';
+                document.querySelector('footer').style.display = 'none';
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    showMainContent();
+                    const targetId = this.dataset.target;
+                    showSection(targetId);
+                });
+            });
+
+            viewDetailButtons.forEach(button => {
+                button.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const modalId = this.dataset.modalTarget;
+                    if (modalId) {
+                        showProjectDetails(modalId);
+                    }
+                });
+            });
+
+            const allCloseButtons = [...modalCloseButtons, ...modalBackButtons];
+            allCloseButtons.forEach(button => {
+                button.addEventListener('click', showMainContent);
+            });
+
+            window.addEventListener('click', function (event) {
+                projectModals.forEach(modal => {
+                    if (event.target == modal) {
+                        showMainContent();
+                    }
+                });
+            });
+
+            function updateClockText(lang) {
+                const timeString = clockElement.textContent.substring(0, 8);
+                const wibLabel = translations[lang].clockWIB || translations.en.clockWIB;
+                if (clockElement) {
+                    clockElement.textContent = `${timeString} ${wibLabel}`;
+                }
+            }
+
+            function updateClock() {
+                const now = new Date();
+                const utcHours = now.getUTCHours();
+                const wibHours = (utcHours + 7) % 24;
+                const hours = String(wibHours).padStart(2, '0');
+                const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+                const seconds = String(now.getUTCSeconds()).padStart(2, '0');
+                const wibLabel = translations[currentLang].clockWIB || translations.en.clockWIB;
+                if (clockElement) {
+                    clockElement.textContent = `${hours}:${minutes}:${seconds} ${wibLabel}`;
+                }
+            }
+
+            function initializeJRPGMusic() {
+                if (isMusicInitialized) return;
+
+                synths.flute = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.1, decay: 0.2, sustain: 0.6, release: 1.2 } }).chain(new Tone.Filter(1500, "lowpass"), new Tone.Reverb(0.3), Tone.Destination);
+                synths.strings = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sawtooth" }, envelope: { attack: 0.8, decay: 0.4, sustain: 0.8, release: 2.0 } }).chain(new Tone.Filter(600, "lowpass"), new Tone.Reverb(0.4), Tone.Destination);
+                synths.harp = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.02, decay: 0.8, sustain: 0.1, release: 1.5 } }).chain(new Tone.Filter(3000, "lowpass"), new Tone.Reverb(0.5), Tone.Destination);
+                synths.bass = new Tone.Synth({ oscillator: { type: "sawtooth" }, envelope: { attack: 0.2, decay: 0.3, sustain: 0.7, release: 1.0 } }).chain(new Tone.Filter(250, "lowpass"), new Tone.Reverb(0.2), Tone.Destination);
+                synths.bells = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.01, decay: 1.2, sustain: 0.2, release: 2.0 } }).chain(new Tone.Filter(2500, "lowpass"), new Tone.Reverb(0.6), Tone.Destination);
+
+                synths.flute.volume.value = -8;
+                synths.strings.volume.value = -18;
+                synths.harp.volume.value = -16;
+                synths.bass.volume.value = -12;
+                synths.bells.volume.value = -20;
+
+                const fluteMelody = [{ note: "D5", time: "0:0:0", duration: "2n." }, { note: "C5", time: "0:1:2", duration: "4n" }, { note: "B4", time: "0:2:0", duration: "2n" }, { note: "A4", time: "0:3:0", duration: "4n" }, { note: "G4", time: "0:3:2", duration: "4n" }, { note: "F4", time: "1:0:0", duration: "2n." }, { note: "G4", time: "1:1:2", duration: "4n" }, { note: "A4", time: "1:2:0", duration: "4n" }, { note: "B4", time: "1:2:2", duration: "4n" }, { note: "C5", time: "1:3:0", duration: "2n" }, { note: "D5", time: "2:0:0", duration: "4n" }, { note: "E5", time: "2:0:2", duration: "4n" }, { note: "F5", time: "2:1:0", duration: "2n." }, { note: "E5", time: "2:2:2", duration: "4n" }, { note: "D5", time: "2:3:0", duration: "2n" }, { note: "C5", time: "3:0:0", duration: "4n" }, { note: "B4", time: "3:0:2", duration: "4n" }, { note: "A4", time: "3:1:0", duration: "2n." }, { note: "G4", time: "3:2:2", duration: "4n" }, { note: "F4", time: "3:3:0", duration: "2n" }, { note: "A4", time: "4:0:0", duration: "2n." }, { note: "B4", time: "4:1:2", duration: "4n" }, { note: "C5", time: "4:2:0", duration: "2n" }, { note: "B4", time: "4:3:0", duration: "4n" }, { note: "A4", time: "4:3:2", duration: "4n" }, { note: "G4", time: "5:0:0", duration: "2n." }, { note: "A4", time: "5:1:2", duration: "4n" }, { note: "B4", time: "5:2:0", duration: "4n" }, { note: "C5", time: "5:2:2", duration: "4n" }, { note: "D5", time: "5:3:0", duration: "2n" }, { note: "E5", time: "6:0:0", duration: "4n" }, { note: "D5", time: "6:0:2", duration: "4n" }, { note: "C5", time: "6:1:0", duration: "2n." }, { note: "B4", time: "6:2:2", duration: "4n" }, { note: "A4", time: "6:3:0", duration: "2n" }, { note: "F4", time: "7:0:0", duration: "2n." }, { note: "G4", time: "7:1:2", duration: "4n" }, { note: "A4", time: "7:2:0", duration: "4n" }, { note: "B4", time: "7:2:2", duration: "4n" }, { note: "C5", time: "7:3:0", duration: "1n" },];
+                const stringChords = [{ notes: ["F3", "A3", "C4"], time: "0:0:0", duration: "1n" }, { notes: ["G3", "B3", "D4"], time: "0:2:0", duration: "2n" }, { notes: ["F3", "A3", "C4", "F4"], time: "1:0:0", duration: "1n" }, { notes: ["C3", "E3", "G3", "C4"], time: "2:0:0", duration: "1n" }, { notes: ["D3", "F3", "A3", "D4"], time: "3:0:0", duration: "1n" }, { notes: ["A3", "C4", "E4"], time: "4:0:0", duration: "1n" }, { notes: ["G3", "B3", "D4"], time: "5:0:0", duration: "1n" }, { notes: ["C3", "E3", "G3", "C4"], time: "6:0:0", duration: "1n" }, { notes: ["F3", "A3", "C4", "F4"], time: "7:0:0", duration: "1n" },];
+                const harpPattern = [{ note: "F4", time: "0:0:0", duration: "8n" }, { note: "A4", time: "0:0:1", duration: "8n" }, { note: "C5", time: "0:0:2", duration: "8n" }, { note: "F5", time: "0:0:3", duration: "8n" }, { note: "C5", time: "0:1:0", duration: "8n" }, { note: "A4", time: "0:1:1", duration: "8n" }, { note: "G4", time: "0:2:0", duration: "8n" }, { note: "B4", time: "0:2:1", duration: "8n" }, { note: "D5", time: "0:2:2", duration: "8n" }, { note: "G5", time: "0:2:3", duration: "8n" }, { note: "D5", time: "0:3:0", duration: "8n" }, { note: "B4", time: "0:3:1", duration: "8n" }, { note: "F4", time: "1:0:0", duration: "8n" }, { note: "A4", time: "1:0:1", duration: "8n" }, { note: "C5", time: "1:0:2", duration: "8n" }, { note: "A4", time: "1:1:0", duration: "8n" }, { note: "F4", time: "1:1:2", duration: "8n" }, { note: "A4", time: "1:2:0", duration: "8n" }, { note: "C5", time: "1:2:2", duration: "8n" }, { note: "F5", time: "1:3:0", duration: "8n" }, { note: "E4", time: "2:0:0", duration: "8n" }, { note: "G4", time: "2:0:1", duration: "8n" }, { note: "C5", time: "2:0:2", duration: "8n" }, { note: "E5", time: "2:0:3", duration: "8n" }, { note: "C5", time: "2:1:0", duration: "8n" }, { note: "G4", time: "2:1:1", duration: "8n" }, { note: "E4", time: "2:2:0", duration: "8n" }, { note: "G4", time: "2:2:1", duration: "8n" }, { note: "C5", time: "2:2:2", duration: "8n" }, { note: "G4", time: "2:3:0", duration: "8n" },];
+                const bassLine = [{ note: "F2", time: "0:0:0", duration: "2n" }, { note: "C2", time: "0:2:0", duration: "2n" }, { note: "F2", time: "1:0:0", duration: "4n" }, { note: "A2", time: "1:1:0", duration: "4n" }, { note: "C3", time: "1:2:0", duration: "4n" }, { note: "A2", time: "1:3:0", duration: "4n" }, { note: "C2", time: "2:0:0", duration: "4n" }, { note: "E2", time: "2:1:0", duration: "4n" }, { note: "G2", time: "2:2:0", duration: "4n" }, { note: "E2", time: "2:3:0", duration: "4n" }, { note: "D2", time: "3:0:0", duration: "4n" }, { note: "F2", time: "3:1:0", duration: "4n" }, { note: "A2", time: "3:2:0", duration: "4n" }, { note: "F2", time: "3:3:0", duration: "4n" }, { note: "A2", time: "4:0:0", duration: "2n" }, { note: "E2", time: "4:2:0", duration: "2n" }, { note: "G2", time: "5:0:0", duration: "2n" }, { note: "D2", time: "5:2:0", duration: "2n" }, { note: "C2", time: "6:0:0", duration: "2n" }, { note: "G2", time: "6:2:0", duration: "2n" }, { note: "F2", time: "7:0:0", duration: "1n" },];
+                const bellMelody = [{ note: "A5", time: "1:2:0", duration: "4n" }, { note: "G5", time: "1:3:2", duration: "4n" }, { note: "F5", time: "2:1:0", duration: "4n" }, { note: "E5", time: "2:2:2", duration: "4n" }, { note: "D5", time: "3:1:0", duration: "4n" }, { note: "C5", time: "3:2:2", duration: "4n" }, { note: "E5", time: "5:1:0", duration: "4n" }, { note: "D5", time: "5:2:2", duration: "4n" }, { note: "C5", time: "6:1:0", duration: "4n" }, { note: "B4", time: "6:2:2", duration: "4n" }, { note: "A5", time: "7:2:0", duration: "2n" },];
+
+                new Tone.Part((time, note) => { synths.flute.triggerAttackRelease(note.note, note.duration, time); }, fluteMelody).start(0);
+                new Tone.Part((time, chord) => { synths.strings.triggerAttackRelease(chord.notes, chord.duration, time); }, stringChords).start(0);
+                new Tone.Part((time, note) => { synths.harp.triggerAttackRelease(note.note, note.duration, time); }, harpPattern).start(0);
+                new Tone.Part((time, note) => { synths.bass.triggerAttackRelease(note.note, note.duration, time); }, bassLine).start(0);
+                new Tone.Part((time, note) => { synths.bells.triggerAttackRelease(note.note, note.duration, time); }, bellMelody).start(0);
+
+                Tone.Transport.bpm.value = 72;
+                Tone.Transport.loop = true;
+                Tone.Transport.loopEnd = "8m";
+                isMusicInitialized = true;
+            }
+
+            if (playMusicButton) {
+                playMusicButton.addEventListener('click', async () => {
+                    if (!musicPlaying) {
+                        if (Tone.context.state !== 'running') { await Tone.start(); }
+                        initializeJRPGMusic();
+                        Tone.Transport.start();
+                        playMusicButton.textContent = translations[currentLang].pauseMusicButton || translations.en.pauseMusicButton;
+                        musicPlaying = true;
+                    } else {
+                        Tone.Transport.stop(); // Use stop to reset position
+                        playMusicButton.textContent = translations[currentLang].playMusicButton || translations.en.playMusicButton;
+                        musicPlaying = false;
+                    }
+                });
+            }
+
+            setLanguage('en');
+            showSection('about');
+            updateClock();
+            setInterval(updateClock, 1000);
+        });
+    </script>
+</body>
+
+</html>
